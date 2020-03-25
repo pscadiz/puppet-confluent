@@ -36,7 +36,8 @@
 # @param service_enable Enable setting to pass to service resource.
 # @param file_limit File limit to set for the Kafka service (SystemD) only.
 class confluent::schema::registry (
-  Variant[String, Array[String]] $kafkastore_connection_url,
+  # Variant[String, Array[String]] $kafkastore_connection_url,
+  Variant[String, Array[String]] $kafkastore_bootstrap_servers,
   Hash $config                               = {},
   Hash $environment_settings                 = {},
   Stdlib::Unixpath $config_path              = $::confluent::params::schema_registry_config_path,
@@ -61,10 +62,11 @@ class confluent::schema::registry (
     include ::confluent::repository
   }
   $default_config = {
-    'kafkastore.connection.url' => join(any2array($kafkastore_connection_url), ','),
-    'listeners'                 => 'http://0.0.0.0:8081',
-    'kafkastore.topic'          => '_schemas',
-    'debug'                     => false
+    'kafkastore.bootstrap.servers' => join(["PLAINTEXT://", join(any2array($kafkastore_bootstrap_servers), ',')], ''),
+    # 'kafkastore.connection.url'    => join(any2array($kafkastore_connection_url), ','),
+    'listeners'                    => 'http://0.0.0.0:8081',
+    'kafkastore.topic'             => '_schemas',
+    'debug'                        => false
   }
 
   $actual_config = merge($default_config, $config)
